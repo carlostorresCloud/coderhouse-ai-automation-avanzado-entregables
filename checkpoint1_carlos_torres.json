@@ -1,0 +1,184 @@
+{
+  "name": "Entregable 1 - Coderhouse - AI Automation avanzado",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un reclutador especializado en puestos del sector tecnológico. Tu función es ayudar a los candidatos a encontrar ofertas laborales \n\nInstrucciones de uso de la herramienta:\n\nEn base a la siguiente solicitud del candidato: {{ $json.chatInput }}\n\nUtiliza  la herramienta de búsqueda de google para obtener resultados reales; no inventes ni asumas ofertas de memoria.\nRecupera un máximo de 5 empleos por consulta.\n\nSi el usuario hace una solicitud que no se relacione a busqueda de empleo regresa que no se encontro informacion en tu base de conocimientos\n\n\nInstrucciones de redacción de la respuesta:\n\nEscribe en un tono profesional y natural, como lo haría un reclutador humano al presentar oportunidades a un candidato.\nNo uses lenguaje informal ni tecnicismos innecesarios.\nNo uses listas ni viñetas, excepto cuando menciones los empleos, productos o servicios específicos encontrados (en ese caso, cada empleo debe incluir: título del puesto, empresa, ubicación/modalidad y enlace para aplicar en el título).\nNo te desvíes hacia otros temas; concéntrate únicamente en responder la consulta del candidato en torno a la busqueda de empleo\nSi no se encuentran resultados relevantes, comunícalo de forma clara y ofrece ajustar la búsqueda (por ejemplo, ampliando ubicación o palabras clave).",
+        "options": {
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        -192
+      ],
+      "id": "67ae9c25-f1d4-4d2e-9bb8-130c7b9a6c91",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 300
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6e57b95-2062-49c1-83ad-60bd98ef07ad",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OIfqQz8Vbdny4csm",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BCPLDRG74",
+          "mode": "list",
+          "cachedResultName": "error-handling"
+        },
+        "text": "=Log de respuesta del agente de ia:  {{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        416,
+        -192
+      ],
+      "id": "2e47c49d-1a5f-4647-99f0-a181e6ddf82e",
+      "name": "Send a message",
+      "webhookId": "36bb6527-a66d-4f4b-b43c-956e6f96d108",
+      "credentials": {
+        "slackApi": {
+          "id": "7nfNMQqulXEQCkKf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -208,
+        -192
+      ],
+      "id": "02d94c18-1f8e-4ebb-8e75-7621f17b3de1",
+      "name": "When chat message received",
+      "webhookId": "de0abfad-c5d1-4a57-82d7-e63c022a5ab7"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta ÚNICAMENTE cuando la consulta del usuario esté relacionada con búsqueda de empleo, por ejemplo:\n- Buscar vacantes, ofertas de trabajo o puestos disponibles\n- Información sobre empresas como empleadores (cultura laboral, sueldos, beneficios, reseñas de empleados)\n- Rangos salariales para un puesto o industria específica\n- Tendencias del mercado laboral, demanda de perfiles o habilidades\n- Requisitos, certificaciones o trayectoria para un puesto o carrera\n- Procesos de contratación, entrevistas o postulación en una empresa\n\nNO uses esta herramienta si la consulta no está relacionada con empleo o mercado laboral (por ejemplo, preguntas generales, temas personales, noticias no laborales, etc.). En esos casos, responde directamente sin buscar.\n\nAl usar la herramienta, realiza la búsqueda en Google limitando los resultados al mercado mexicano (sitios .mx, empresas que operan en México, y datos salariales/laborales específicos de México), con el fin de devolver información precisa y relevante para el usuario.",
+        "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query__q_', ``, 'string') }}",
+        "geographic_location": {
+          "location": "Mexico"
+        },
+        "localization": {},
+        "filters": {},
+        "pagination": {
+          "num": 2
+        },
+        "zero_data_retention": {},
+        "requestOptions": {}
+      },
+      "type": "@searchapi/n8n-nodes-searchapi.searchApiTool",
+      "typeVersion": 1,
+      "position": [
+        256,
+        0
+      ],
+      "id": "67209f01-4c6e-4c36-b026-08a2115019ef",
+      "name": "buscar en google",
+      "credentials": {
+        "searchApi": {
+          "id": "bnxDLEO9eFCSOrIQ",
+          "name": "SearchApi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar en google": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f1e4ce79-aa73-40d0-8fea-0224896e85fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "09729d5bf80e38694612e2d876ac19ff217f97b6f03b350a902aa4de6c52b449"
+  },
+  "nodeGroups": [],
+  "id": "i56QdAPn2n0QYZYP",
+  "tags": []
+}
