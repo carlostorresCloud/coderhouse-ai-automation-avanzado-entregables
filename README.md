@@ -1,2 +1,2 @@
 # coderhouse-ai-automation-avanzado-entregables
-Entregables del curso de coderhouse 
+En este repo estare subiendo los entregables del curso
