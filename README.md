@@ -67,6 +67,49 @@ Todas las integraciones están conectadas mediante **OAuth2**:
 ├── checkpoint4_Carlos_Torres.json   # Workflow exportado desde n8n
 └── README.md                                                     # Este archivo
 ```
+
+
+## ✅ Configuración y validación de OAuth2 (Gmail y Google Sheets)
+ 
+Como uso una instancia selfhosteada de n8n, las credenciales de Google no se conectan con un clic: hay que crear mi propia app OAuth en **Google Cloud Platform (GCP)** y enlazarla a n8n, mediante los siguientes pasos:
+
+### Paso 1 — Crear el proyecto en Google Cloud
+ 
+1. Entrar a [Google Cloud Console](https://console.cloud.google.com/) y crear un proyecto nuevo (por ejemplo, `n8n-oauth-entregable`).
+2. Verificar que el proyecto quede seleccionado en el selector superior.
+
+### Paso 2 — Habilitar las APIs necesarias
+ 
+En **APIs y servicios > Biblioteca**, habilitar:
+ 
+- **Gmail API**
+- **Google Sheets API**
+
+### Paso 3 — Configurar la pantalla de consentimiento OAuth
+ 
+En **APIs y servicios > Pantalla de consentimiento de OAuth**:
+ 
+1. Elegir el tipo de usuario (**Externo** para cuentas personales de Gmail).
+2. Completar nombre de la app y correo de contacto.
+3. Agregar los **scopes** necesarios (Gmail y Google Sheets).
+4. En modo *Testing*, agregar mi cuenta en **Usuarios de prueba** (sin esto, Google bloquea el login con el error `access_denied`).
+
+
+### Paso 4 — Crear las credenciales OAuth (Client ID y Client Secret)
+ 
+En **APIs y servicios > Credenciales > Crear credenciales > ID de cliente de OAuth**:
+ 
+1. Tipo de aplicación: **Aplicación web**.
+2. En **URI de redireccionamiento autorizados**, pegar la *OAuth Redirect URL* que muestra n8n al crear la credencial
+
+
+
+Evidencias de oauth funcionando en n8n
+
+![ OAuth Client ID - gmail ](./screenshots/gmail-oauth2.png)
+
+![ OAuth Client ID - sheets ](./screenshots/GoogleSheets-oauth2.png)
+
  
 ## 🚀 Cómo importar el workflow
  
