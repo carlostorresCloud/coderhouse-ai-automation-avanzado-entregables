@@ -106,9 +106,9 @@ En **APIs y servicios > Credenciales > Crear credenciales > ID de cliente de OAu
 
 Evidencias de oauth funcionando en n8n
 
-![ OAuth Client ID - gmail ](./screenshots/gmail-oauth2.png)
+![ OAuth Client ID - gmail ](gmail-oauth2.png)
 
-![ OAuth Client ID - sheets ](./screenshots/GoogleSheets-oauth2.png)
+![ OAuth Client ID - sheets ](GoogleSheets-oauth2.png)
 
  
 ## 🚀 Cómo importar el workflow
