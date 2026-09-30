@@ -3,21 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "promptType": "define",
-        "text": "=Analiza el contenido del siguiente correo electrónico. Tu objetivo principal es extraer el nombre del contacto y generar un resumen claro y conciso del mensaje.\n\nDatos del correo:\n\nRemitente: {{ $('Gmail Trigger').item.json.From }}\n\nAsunto: {{ $('Gmail Trigger').item.json.Subject }}\n\nCuerpo del mensaje: {{ $('Gmail Trigger').item.json.snippet }}\n\nCategoria del correo: {{ $('Gmail Trigger').item.json.labels[1].name }}\n\nInstrucciones de extracción y resumen:\n\nNombre del contacto: Identifica el nombre de la persona que escribe el correo. Búscalo en la firma, en el saludo inicial o infiérelo del nombre del remitente. Si no se puede determinar de forma precisa, devuelve el nombre del remitente.\n\nResumen: Escribe un resumen breve (máximo 2 o 3 oraciones) que capture el propósito principal del correo, la idea central y cualquier acción o solicitud requerida.\n\nLimpieza de contexto: Ignora avisos legales, políticas de privacidad, firmas corporativas genéricas o texto basura que no aporte al mensaje principal.\n\nDevuelve tu respuesta únicamente en el siguiente formato JSON, sin texto adicional:\n{\n\"nombre_contacto\": \"Nombre extraído\",\n\"correo\": {{ $json.From }}\n\"resumen\": \"Tu resumen del correo aquí\"\n}",
-        "hasOutputParser": true
-      },
-      "id": "9e70dbaa-c499-43d8-921d-88dcc5ce4ac7",
-      "name": "AI Lead classificator",
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.6,
-      "position": [
-        1232,
-        1664
-      ]
-    },
-    {
-      "parameters": {
         "model": {
           "__rl": true,
           "value": "gpt-4o-mini",
@@ -48,15 +33,13 @@
         "pollTimes": {
           "item": [
             {
-              "mode": "everyHour",
-              "minute": 1
+              "mode": "everyHour"
             }
           ]
         },
         "maxResults": 16,
         "filters": {
-          "q": "",
-          "sender": "workday"
+          "q": "subject: Application"
         }
       },
       "type": "n8n-nodes-base.gmailTrigger",
@@ -78,14 +61,14 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "caseSensitive": false,
             "leftValue": "",
             "typeValidation": "strict",
             "version": 2
           },
           "conditions": [
             {
-              "leftValue": "={{ $json.subject }}",
+              "leftValue": "={{ $json.Subject }}",
               "rightValue": "auto-reply",
               "operator": {
                 "type": "string",
@@ -94,7 +77,7 @@
               "id": "35ec5677-a018-4a51-95d4-a06c6ef0a563"
             },
             {
-              "leftValue": "={{ $json.subject }}",
+              "leftValue": "={{ $json.Subject }}",
               "rightValue": "out of office",
               "operator": {
                 "type": "string",
@@ -103,7 +86,7 @@
               "id": "68c88b9e-a790-49c7-bad6-787fd83094dc"
             },
             {
-              "leftValue": "={{ $json.subject }}",
+              "leftValue": "={{ $json.Subject }}",
               "rightValue": "undeliverable",
               "operator": {
                 "type": "string",
@@ -112,9 +95,9 @@
               "id": "9130acfe-16cd-4e9d-af3c-1fcee83d3e6a"
             },
             {
-              "id": "e804e5e9-1574-4e93-b5f6-00163a461319",
+              "id": "9150f571-74d1-4341-9f44-38a54d01d802",
               "leftValue": "={{ $json.From }}",
-              "rightValue": "noreply",
+              "rightValue": "no-reply",
               "operator": {
                 "type": "string",
                 "operation": "contains"
@@ -123,7 +106,9 @@
           ],
           "combinator": "or"
         },
-        "options": {}
+        "options": {
+          "ignoreCase": true
+        }
       },
       "id": "2ee0e69a-a8c6-4cf7-8934-95e9b9b0d8ae",
       "name": "Es autoreply?",
@@ -147,40 +132,6 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.Candidato }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "exists",
-                "singleValue": true
-              },
-              "id": "3a53ac6d-d9ce-4930-8eaa-25143decd9b9"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "0c89022f-934f-43c7-8299-5f8928a44fea",
-      "name": "IF - Contacto existe?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        2032,
-        1776
-      ]
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
@@ -200,6 +151,18 @@
               "name": "respuesta_ia",
               "value": "={{ $json.output.resumen }}",
               "type": "string"
+            },
+            {
+              "id": "fa12ee99-92e9-4459-a37f-dbb1d92e2ec9",
+              "name": "asunto",
+              "value": "={{ $json.output.asunto }}",
+              "type": "string"
+            },
+            {
+              "id": "bc37c2fd-e73a-474d-987e-eaf2d337dc00",
+              "name": "es_correo_valido",
+              "value": "={{ $json.isValid }}",
+              "type": "boolean"
             }
           ]
         },
@@ -210,13 +173,12 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1584,
+        1808,
         1776
       ]
     },
     {
       "parameters": {
-        "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
           "value": "1emEpk4OGbf_983Lwho5ng2LJ7NwZd5dubQNv0e2i4kc",
@@ -231,75 +193,25 @@
           "cachedResultName": "Hoja 1",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1emEpk4OGbf_983Lwho5ng2LJ7NwZd5dubQNv0e2i4kc/edit#gid=0"
         },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Candidato": "={{ $json.contacto }}"
-          },
-          "matchingColumns": [
-            "Candidato"
-          ],
-          "schema": [
+        "filtersUI": {
+          "values": [
             {
-              "id": "Candidato",
-              "displayName": "Candidato",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Fase",
-              "displayName": "Fase",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Rol",
-              "displayName": "Rol",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Empresa",
-              "displayName": "Empresa",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Notas",
-              "displayName": "Notas",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "lookupColumn": "Candidato",
+              "lookupValue": "={{ $json.contacto }}"
             }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          ]
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1808,
+        2256,
         1776
       ],
       "id": "bf411257-596b-4e59-823e-e71cedc95331",
       "name": "CRM - Buscar Contacto",
+      "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "FNJ10BFsVYasMwjo",
@@ -390,7 +302,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2256,
+        2704,
         1680
       ],
       "id": "52a571e6-3f6c-400d-a722-5705caa04cfe",
@@ -417,7 +329,7 @@
     },
     {
       "parameters": {
-        "jsonSchemaExample": "{\n\t\"nombre\": \"string\",\n\t\"correo\": \"string\",\n    \"resumen\":\"string\"\n}"
+        "jsonSchemaExample": "{\n\t\"nombre\": \"string\",\n\t\"correo\": \"string\",\n    \"asunto\": \"string\",\n    \"resumen\":\"string\"\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
@@ -431,8 +343,8 @@
     {
       "parameters": {
         "content": "El agente de ia extrae los datos del correo como contacto, nombre y genera un resumen y luego el nodo structured output parser genera un json schema apropiado",
-        "height": 208,
-        "width": 512
+        "height": 176,
+        "width": 272
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -446,7 +358,7 @@
     {
       "parameters": {
         "resource": "draft",
-        "subject": "=RE: request for feedback",
+        "subject": "=RE: {{ $('Normalizar payload').item.json.asunto }}",
         "message": "={{ $('Normalizar payload').item.json.respuesta_ia }}",
         "options": {
           "sendTo": "=ing.torres.carlos.sanchez@gmail.com"
@@ -457,7 +369,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2256,
+        2704,
         1872
       ],
       "webhookId": "67d0fb50-69ee-4ea8-9b72-7ecd581a0cbd",
@@ -477,7 +389,7 @@
           "mode": "list",
           "cachedResultName": "equipo-de-soporte"
         },
-        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload').item.json.from }} con la siguiente innformacion: {{ $('AI Lead classificator').item.json.output.resumen }}",
+        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
         "otherOptions": {}
       },
       "id": "8b82738d-0290-48c2-b195-9e34c83bc01e",
@@ -485,10 +397,217 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
       "position": [
-        2480,
+        2928,
         1872
       ],
       "webhookId": "fefa9efa-69eb-4a7c-8309-9e3c21d405e1",
+      "credentials": {
+        "slackApi": {
+          "id": "7nfNMQqulXEQCkKf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el contenido del siguiente correo electrónico. Tu objetivo principal es extraer el nombre del contacto y generar un resumen claro y conciso del mensaje.\n\nDatos del correo:\n\nRemitente: {{ $('Gmail Trigger').item.json.From }}\n\nAsunto: {{ $('Gmail Trigger').item.json.Subject }}\n\nCuerpo del mensaje: {{ $('Gmail Trigger').item.json.snippet }}\n\nCategoria del correo: {{ $('Gmail Trigger').item.json.labels[1].name }}\n\nInstrucciones de extracción y resumen:\n\nNombre del contacto: Identifica el nombre de la persona que escribe el correo. Búscalo en la firma, en el saludo inicial o infiérelo del nombre del remitente. Si no se puede determinar de forma precisa, devuelve el nombre del remitente.\n\nResumen: Escribe un resumen breve (máximo 2 o 3 oraciones) que capture el propósito principal del correo, la idea central y cualquier acción o solicitud requerida.\n\nAsunto: Escribe un asunto de correo que sea relevante a lo que resumiste\n\nLimpieza de contexto: Ignora avisos legales, políticas de privacidad, firmas corporativas genéricas o texto basura que no aporte al mensaje principal.\n\nDevuelve tu respuesta únicamente en el siguiente formato JSON, sin texto adicional:\n{\n\"nombre_contacto\": \"Nombre extraído\",\n\"correo\": {{ $json.From }},\n\"asunto\":\"Asunto del correo\"\n\"resumen\": \"Tu resumen del correo aquí\"\n}",
+        "hasOutputParser": true
+      },
+      "id": "9e70dbaa-c499-43d8-921d-88dcc5ce4ac7",
+      "name": "Agente - Analizar Correo",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1232,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=RE: {{ $('Normalizar payload').item.json.asunto }}",
+        "message": "={{ $('Normalizar payload').item.json.respuesta_ia }}",
+        "options": {
+          "sendTo": "=ing.torres.carlos.sanchez@gmail.com"
+        }
+      },
+      "id": "ae0832ee-da71-492d-8670-40fc41956c35",
+      "name": "Hacer borrador - Human in the loop1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2928,
+        1680
+      ],
+      "webhookId": "67d0fb50-69ee-4ea8-9b72-7ecd581a0cbd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dZ7tI22M6ive3gYB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C5JK38KCY",
+          "mode": "list",
+          "cachedResultName": "equipo-de-soporte"
+        },
+        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
+        "otherOptions": {}
+      },
+      "id": "86a0f649-05a4-465f-9161-27316658058e",
+      "name": "Notificar al equipo de soporte1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        3152,
+        1680
+      ],
+      "webhookId": "fefa9efa-69eb-4a7c-8309-9e3c21d405e1",
+      "credentials": {
+        "slackApi": {
+          "id": "7nfNMQqulXEQCkKf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "3a53ac6d-d9ce-4930-8eaa-25143decd9b9"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0c89022f-934f-43c7-8299-5f8928a44fea",
+      "name": "IF - CRM Esta vacio",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2480,
+        1776
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Si no se encontro el contacto en el CRM, se procede a crear uno nuevo",
+        "height": 176,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        1504
+      ],
+      "id": "1168f63b-f6ec-4884-ad48-53c0c601bba9",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  const data = item.json.output || {};\n\n  const correoRaw = (data.correo || '').toString().trim();\n  const asunto = (data.asunto || '').toString().trim();\n\n  // Extraer el email \n  const match = correoRaw.match(/<([^>]+)>/);\n  const correo = (match ? match[1] : correoRaw).trim().toLowerCase();\n\n  // Validar que el correo tenga un formato correcto\n  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n\n  const errores = [];\n  if (!correo) errores.push('El correo está vacío');\n  else if (!emailRegex.test(correo)) errores.push('El correo no tiene un formato válido');\n  if (!asunto) errores.push('El asunto está vacío');\n\n  results.push({\n    json: {\n      ...item.json,\n      output: {\n        ...data,\n        correo,   // correo ya limpio\n        asunto,\n      },\n      isValid: errores.length === 0,\n      errores,\n    },\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        1776
+      ],
+      "id": "5462063c-3cae-44f3-af67-3b2f68568e37",
+      "name": "validar datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c99317e7-578a-4278-bf05-5c4c0287db05",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1984,
+        1920
+      ],
+      "id": "bef91fad-0c33-41ce-8ab3-498af14ad9c4",
+      "name": "If - es correo valido"
+    },
+    {
+      "parameters": {
+        "content": "Se creo un nodo de codigo para validar el json schema regresado por el agente antes de normalizar el payload y si no hay informacion valida se notifica el error en slack",
+        "height": 176,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        1440
+      ],
+      "id": "1504b76b-65a0-4ef7-ba78-f567b046eb36",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BCPLDRG74",
+          "mode": "list",
+          "cachedResultName": "error-handling"
+        },
+        "updateFields": {},
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        2208,
+        2016
+      ],
+      "id": "8e2631d9-8ba5-40e1-87fd-9a485c4604d8",
+      "name": "Logear error en slack",
+      "webhookId": "57f9200a-92d8-432c-8c2b-6c398ef59c90",
       "credentials": {
         "slackApi": {
           "id": "7nfNMQqulXEQCkKf",
@@ -499,22 +618,11 @@
   ],
   "pinData": {},
   "connections": {
-    "AI Lead classificator": {
-      "main": [
-        [
-          {
-            "node": "Normalizar payload",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Model": {
       "ai_languageModel": [
         [
           {
-            "node": "AI Lead classificator",
+            "node": "Agente - Analizar Correo",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -543,25 +651,7 @@
         ],
         [
           {
-            "node": "AI Lead classificator",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF - Contacto existe?": {
-      "main": [
-        [
-          {
-            "node": "Hacer borrador - Human in the loop",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "CRM - Crear contacto",
+            "node": "Agente - Analizar Correo",
             "type": "main",
             "index": 0
           }
@@ -572,7 +662,7 @@
       "main": [
         [
           {
-            "node": "CRM - Buscar Contacto",
+            "node": "If - es correo valido",
             "type": "main",
             "index": 0
           }
@@ -583,7 +673,7 @@
       "main": [
         [
           {
-            "node": "IF - Contacto existe?",
+            "node": "IF - CRM Esta vacio",
             "type": "main",
             "index": 0
           }
@@ -594,7 +684,7 @@
       "ai_outputParser": [
         [
           {
-            "node": "AI Lead classificator",
+            "node": "Agente - Analizar Correo",
             "type": "ai_outputParser",
             "index": 0
           }
@@ -611,6 +701,86 @@
           }
         ]
       ]
+    },
+    "Agente - Analizar Correo": {
+      "main": [
+        [
+          {
+            "node": "validar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM - Crear contacto": {
+      "main": [
+        [
+          {
+            "node": "Hacer borrador - Human in the loop1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hacer borrador - Human in the loop1": {
+      "main": [
+        [
+          {
+            "node": "Notificar al equipo de soporte1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - CRM Esta vacio": {
+      "main": [
+        [
+          {
+            "node": "CRM - Crear contacto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hacer borrador - Human in the loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validar datos": {
+      "main": [
+        [
+          {
+            "node": "Normalizar payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - es correo valido": {
+      "main": [
+        [
+          {
+            "node": "CRM - Buscar Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Logear error en slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -618,7 +788,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "669e1165-a3d0-4c2c-991c-d478693f714c",
+  "versionId": "21dca803-c886-4842-a0a2-7afe7c8ddea9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "09729d5bf80e38694612e2d876ac19ff217f97b6f03b350a902aa4de6c52b449"
