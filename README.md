@@ -64,7 +64,7 @@ Todas las integraciones están conectadas mediante **OAuth2**:
 ## 📂 Contenido del repositorio
  
 ```
-├── Entregable_clase_4_-_Integraciones_externas_con_oauth.json   # Workflow exportado desde n8n
+├── checkpoint4_Carlos_Torres.json   # Workflow exportado desde n8n
 └── README.md                                                     # Este archivo
 ```
  
