@@ -19,7 +19,7 @@
       "typeVersion": 1.2,
       "position": [
         1248,
-        1904
+        1984
       ],
       "credentials": {
         "openAiApi": {
@@ -46,7 +46,7 @@
       "typeVersion": 1.4,
       "position": [
         784,
-        1920
+        2000
       ],
       "id": "62e7cc5f-1aec-40b5-bca4-f21d23d2a543",
       "name": "Gmail Trigger",
@@ -116,7 +116,7 @@
       "typeVersion": 2.2,
       "position": [
         1008,
-        1920
+        2000
       ]
     },
     {
@@ -125,57 +125,10 @@
       "typeVersion": 1,
       "position": [
         1296,
-        2064
+        2160
       ],
       "id": "67c2e220-c176-433e-8590-777a17972ad0",
       "name": "terminar flujo"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "4db3991a-f170-4bf0-9f05-dcb9d479b05a",
-              "name": "from",
-              "value": "={{ $json.output.correo }}",
-              "type": "string"
-            },
-            {
-              "id": "369f57c3-1fd9-4606-a0a1-a592c96eb947",
-              "name": "contacto",
-              "value": "={{ $json.output.nombre }}",
-              "type": "string"
-            },
-            {
-              "id": "ea61e241-443a-4aab-97a1-0fb3ae7d6659",
-              "name": "respuesta_ia",
-              "value": "={{ $json.output.resumen }}",
-              "type": "string"
-            },
-            {
-              "id": "fa12ee99-92e9-4459-a37f-dbb1d92e2ec9",
-              "name": "asunto",
-              "value": "={{ $json.output.asunto }}",
-              "type": "string"
-            },
-            {
-              "id": "bc37c2fd-e73a-474d-987e-eaf2d337dc00",
-              "name": "es_correo_valido",
-              "value": "={{ $json.isValid }}",
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "685133a3-9030-4c7e-a39d-c27ca6a034a8",
-      "name": "Normalizar payload",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1808,
-        1776
-      ]
     },
     {
       "parameters": {
@@ -196,7 +149,7 @@
         "filtersUI": {
           "values": [
             {
-              "lookupColumn": "Candidato",
+              "lookupColumn": "Contacto",
               "lookupValue": "={{ $json.contacto }}"
             }
           ]
@@ -207,7 +160,7 @@
       "typeVersion": 4.7,
       "position": [
         2256,
-        1776
+        1760
       ],
       "id": "bf411257-596b-4e59-823e-e71cedc95331",
       "name": "CRM - Buscar Contacto",
@@ -239,16 +192,16 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Candidato": "={{ $('Normalizar payload').item.json.contacto }}",
-            "Notas": "={{ $('Normalizar payload').item.json.respuesta_ia }}",
-            "Empresa": "={{ $('Normalizar payload').item.json.from }}",
-            "Fase": "En proceso"
+            "Contacto": "={{ $('Normalizar payload contacto').item.json.contacto }}",
+            "Notas": "={{ $('Normalizar payload contacto').item.json.respuesta_ia }}",
+            "Correo": "={{ $('Normalizar payload contacto').item.json.from }}",
+            "Empresa": "={{ $('Normalizar payload contacto').item.json.empresa }}"
           },
           "matchingColumns": [],
           "schema": [
             {
-              "id": "Candidato",
-              "displayName": "Candidato",
+              "id": "Contacto",
+              "displayName": "Contacto",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -256,24 +209,13 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "Fase",
-              "displayName": "Fase",
+              "id": "Correo",
+              "displayName": "Correo",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Rol",
-              "displayName": "Rol",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": true
+              "canBeUsedToMatch": true
             },
             {
               "id": "Empresa",
@@ -302,8 +244,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2704,
-        1680
+        2928,
+        1664
       ],
       "id": "52a571e6-3f6c-400d-a722-5705caa04cfe",
       "name": "CRM - Crear contacto",
@@ -329,13 +271,13 @@
     },
     {
       "parameters": {
-        "jsonSchemaExample": "{\n\t\"nombre\": \"string\",\n\t\"correo\": \"string\",\n    \"asunto\": \"string\",\n    \"resumen\":\"string\"\n}"
+        "jsonSchemaExample": "{\n\t\"nombre\": \"string\",\n\t\"correo\": \"string\",\n    \"asunto\": \"string\",\n    \"empresa\":\"string\",\n    \"resumen\":\"string\"\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
         1376,
-        1904
+        1984
       ],
       "id": "7d7a3634-3d8c-40b5-be16-fbde68d3545a",
       "name": "Structured Output Parser"
@@ -358,10 +300,10 @@
     {
       "parameters": {
         "resource": "draft",
-        "subject": "=RE: {{ $('Normalizar payload').item.json.asunto }}",
-        "message": "={{ $('Normalizar payload').item.json.respuesta_ia }}",
+        "subject": "=RE: {{ $('Normalizar payload contacto').item.json.asunto }}",
+        "message": "={{ $('Normalizar payload contacto').item.json.respuesta_ia }}",
         "options": {
-          "sendTo": "=ing.torres.carlos.sanchez@gmail.com"
+          "sendTo": "={{ $('Normalizar payload contacto').item.json.from }}"
         }
       },
       "id": "19437e3c-b25f-430a-8115-d4b446dc8bfc",
@@ -369,8 +311,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2704,
-        1872
+        2928,
+        1856
       ],
       "webhookId": "67d0fb50-69ee-4ea8-9b72-7ecd581a0cbd",
       "credentials": {
@@ -389,7 +331,7 @@
           "mode": "list",
           "cachedResultName": "equipo-de-soporte"
         },
-        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
+        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload contacto').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
         "otherOptions": {}
       },
       "id": "8b82738d-0290-48c2-b195-9e34c83bc01e",
@@ -397,8 +339,8 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
       "position": [
-        2928,
-        1872
+        3152,
+        1856
       ],
       "webhookId": "fefa9efa-69eb-4a7c-8309-9e3c21d405e1",
       "credentials": {
@@ -411,7 +353,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Analiza el contenido del siguiente correo electrónico. Tu objetivo principal es extraer el nombre del contacto y generar un resumen claro y conciso del mensaje.\n\nDatos del correo:\n\nRemitente: {{ $('Gmail Trigger').item.json.From }}\n\nAsunto: {{ $('Gmail Trigger').item.json.Subject }}\n\nCuerpo del mensaje: {{ $('Gmail Trigger').item.json.snippet }}\n\nCategoria del correo: {{ $('Gmail Trigger').item.json.labels[1].name }}\n\nInstrucciones de extracción y resumen:\n\nNombre del contacto: Identifica el nombre de la persona que escribe el correo. Búscalo en la firma, en el saludo inicial o infiérelo del nombre del remitente. Si no se puede determinar de forma precisa, devuelve el nombre del remitente.\n\nResumen: Escribe un resumen breve (máximo 2 o 3 oraciones) que capture el propósito principal del correo, la idea central y cualquier acción o solicitud requerida.\n\nAsunto: Escribe un asunto de correo que sea relevante a lo que resumiste\n\nLimpieza de contexto: Ignora avisos legales, políticas de privacidad, firmas corporativas genéricas o texto basura que no aporte al mensaje principal.\n\nDevuelve tu respuesta únicamente en el siguiente formato JSON, sin texto adicional:\n{\n\"nombre_contacto\": \"Nombre extraído\",\n\"correo\": {{ $json.From }},\n\"asunto\":\"Asunto del correo\"\n\"resumen\": \"Tu resumen del correo aquí\"\n}",
+        "text": "=Analiza el contenido del siguiente correo electrónico. Tu objetivo principal es extraer el nombre del contacto y generar un resumen claro y conciso del mensaje.\n\nDatos del correo:\n\nRemitente: {{ $('Gmail Trigger').item.json.From }}\n\nAsunto: {{ $('Gmail Trigger').item.json.Subject }}\n\nCuerpo del mensaje: {{ $('Gmail Trigger').item.json.snippet }}\n\nCategoria del correo: {{ $('Gmail Trigger').item.json.labels[1].name }}\n\nInstrucciones de extracción y resumen:\n\nNombre del contacto: Identifica el nombre de la persona que escribe el correo. Búscalo en la firma, en el saludo inicial o infiérelo del nombre del remitente. Si no se puede determinar de forma precisa, devuelve el nombre del remitente.\n\nResumen: Escribe un resumen breve (máximo 2 o 3 oraciones) que capture el propósito principal del correo, la idea central y cualquier acción o solicitud requerida.\n\nAsunto: Escribe un asunto de correo que sea relevante a lo que resumiste\n\n\nEmpresa: Infiere el nombre de la empresa usando el correo o cuerpo del mensaje, en caso de no encontrar informacion regresa \"Empresa desconocida\"\n\nLimpieza de contexto: Ignora avisos legales, políticas de privacidad, firmas corporativas genéricas o texto basura que no aporte al mensaje principal.\n\nDevuelve tu respuesta únicamente en el siguiente formato JSON, sin texto adicional:\n{\n\"nombre_contacto\": \"Nombre extraído\",\n\"correo\": {{ $json.From }},\n\"asunto\":\"Asunto del correo\",\n\"empresa\":\"Nombre de la empresa\",\n\"resumen\": \"Tu resumen del correo aquí\"\n}",
         "hasOutputParser": true
       },
       "id": "9e70dbaa-c499-43d8-921d-88dcc5ce4ac7",
@@ -420,16 +362,16 @@
       "typeVersion": 1.6,
       "position": [
         1232,
-        1664
+        1760
       ]
     },
     {
       "parameters": {
         "resource": "draft",
-        "subject": "=RE: {{ $('Normalizar payload').item.json.asunto }}",
-        "message": "={{ $('Normalizar payload').item.json.respuesta_ia }}",
+        "subject": "=RE: {{ $('Normalizar payload contacto').item.json.asunto }}",
+        "message": "={{ $('Normalizar payload contacto').item.json.respuesta_ia }}",
         "options": {
-          "sendTo": "=ing.torres.carlos.sanchez@gmail.com"
+          "sendTo": "={{ $('Normalizar payload contacto').item.json.from }}"
         }
       },
       "id": "ae0832ee-da71-492d-8670-40fc41956c35",
@@ -437,8 +379,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2928,
-        1680
+        3152,
+        1664
       ],
       "webhookId": "67d0fb50-69ee-4ea8-9b72-7ecd581a0cbd",
       "credentials": {
@@ -457,7 +399,7 @@
           "mode": "list",
           "cachedResultName": "equipo-de-soporte"
         },
-        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
+        "text": "=Nuevo borrador para revision humana. Cliente: {{ $('Normalizar payload contacto').item.json.from }} con la siguiente innformacion: {{ $('Agente - Analizar Correo').item.json.output.resumen }}",
         "otherOptions": {}
       },
       "id": "86a0f649-05a4-465f-9161-27316658058e",
@@ -465,8 +407,8 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
       "position": [
-        3152,
-        1680
+        3376,
+        1664
       ],
       "webhookId": "fefa9efa-69eb-4a7c-8309-9e3c21d405e1",
       "credentials": {
@@ -475,40 +417,6 @@
           "name": "Slack account"
         }
       }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.isEmpty() }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "id": "3a53ac6d-d9ce-4930-8eaa-25143decd9b9"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "0c89022f-934f-43c7-8299-5f8928a44fea",
-      "name": "IF - CRM Esta vacio",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        2480,
-        1776
-      ]
     },
     {
       "parameters": {
@@ -533,7 +441,7 @@
       "typeVersion": 2,
       "position": [
         1584,
-        1776
+        1856
       ],
       "id": "5462063c-3cae-44f3-af67-3b2f68568e37",
       "name": "validar datos"
@@ -550,12 +458,11 @@
           "conditions": [
             {
               "id": "c99317e7-578a-4278-bf05-5c4c0287db05",
-              "leftValue": "",
-              "rightValue": "",
+              "leftValue": "={{ $json.from }}",
+              "rightValue": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$",
               "operator": {
                 "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
+                "operation": "regex"
               }
             }
           ],
@@ -566,8 +473,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1984,
-        1920
+        2032,
+        1856
       ],
       "id": "bef91fad-0c33-41ce-8ab3-498af14ad9c4",
       "name": "If - es correo valido"
@@ -602,8 +509,8 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        2208,
-        2016
+        2256,
+        1952
       ],
       "id": "8e2631d9-8ba5-40e1-87fd-9a485c4604d8",
       "name": "Logear error en slack",
@@ -614,6 +521,116 @@
           "name": "Slack account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json['Candidato-existe'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "3a53ac6d-d9ce-4930-8eaa-25143decd9b9"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "0c89022f-934f-43c7-8299-5f8928a44fea",
+      "name": "IF - CRM Contacto existe",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85043278-c22c-49ee-8242-5a78db3de64f",
+              "name": "Candidato-existe",
+              "value": "={{ Object.keys($('CRM - Buscar Contacto').first().json).length > 0 }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2480,
+        1760
+      ],
+      "id": "4770d01d-19f3-4a2d-b9b8-ba064289ae5b",
+      "name": "Normalizar condicion - contacto existe"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4db3991a-f170-4bf0-9f05-dcb9d479b05a",
+              "name": "from",
+              "value": "={{ $json.output.correo }}",
+              "type": "string"
+            },
+            {
+              "id": "369f57c3-1fd9-4606-a0a1-a592c96eb947",
+              "name": "contacto",
+              "value": "={{ $json.output.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "ea61e241-443a-4aab-97a1-0fb3ae7d6659",
+              "name": "respuesta_ia",
+              "value": "={{ $json.output.resumen }}",
+              "type": "string"
+            },
+            {
+              "id": "fa12ee99-92e9-4459-a37f-dbb1d92e2ec9",
+              "name": "asunto",
+              "value": "={{ $json.output.asunto }}",
+              "type": "string"
+            },
+            {
+              "id": "bc37c2fd-e73a-474d-987e-eaf2d337dc00",
+              "name": "es_correo_valido",
+              "value": "={{ $json.isValid }}",
+              "type": "boolean"
+            },
+            {
+              "id": "2560f18b-a0aa-413d-93ef-6fb06cd22f19",
+              "name": "empresa",
+              "value": "={{ $json.output.empresa }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "685133a3-9030-4c7e-a39d-c27ca6a034a8",
+      "name": "Normalizar payload contacto",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        1856
+      ]
     }
   ],
   "pinData": {},
@@ -658,22 +675,11 @@
         ]
       ]
     },
-    "Normalizar payload": {
-      "main": [
-        [
-          {
-            "node": "If - es correo valido",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "CRM - Buscar Contacto": {
       "main": [
         [
           {
-            "node": "IF - CRM Esta vacio",
+            "node": "Normalizar condicion - contacto existe",
             "type": "main",
             "index": 0
           }
@@ -735,29 +741,11 @@
         ]
       ]
     },
-    "IF - CRM Esta vacio": {
-      "main": [
-        [
-          {
-            "node": "CRM - Crear contacto",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Hacer borrador - Human in the loop",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "validar datos": {
       "main": [
         [
           {
-            "node": "Normalizar payload",
+            "node": "Normalizar payload contacto",
             "type": "main",
             "index": 0
           }
@@ -781,6 +769,46 @@
           }
         ]
       ]
+    },
+    "IF - CRM Contacto existe": {
+      "main": [
+        [
+          {
+            "node": "Hacer borrador - Human in the loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM - Crear contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar condicion - contacto existe": {
+      "main": [
+        [
+          {
+            "node": "IF - CRM Contacto existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar payload contacto": {
+      "main": [
+        [
+          {
+            "node": "If - es correo valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -788,7 +816,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "21dca803-c886-4842-a0a2-7afe7c8ddea9",
+  "versionId": "f32b1b68-62dd-4775-836b-fcf48ba33c41",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "09729d5bf80e38694612e2d876ac19ff217f97b6f03b350a902aa4de6c52b449"
